@@ -7,12 +7,11 @@ export default defineNuxtConfig({
     quiet: true,
   },
 
-    // Proxy n8n → tidak ada CORS issue
   routeRules: {
-    '/api/n8n/**': {
-      proxy: 'http://localhost:5678/**'
-    }
-  },
+  '/api/n8n/**': {
+    proxy: 'https://n8n.devss.my.id/**'
+  }
+},
 
   typescript: {
     typeCheck: false,

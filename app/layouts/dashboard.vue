@@ -5,7 +5,7 @@
     <aside class="w-52 bg-white dark:bg-gray-800 flex flex-col fixed h-full shadow-sm z-10">
       <div class="px-5 pt-6 pb-4">
         <h1 class="text-2xl font-bold text-[#F03131]">Watcher</h1>
-        <p class="text-xs text-gray-400 mt-0.5">MDM Reminder</p>
+        <p class="text-xs text-gray-400 mt-0.5">MDM Portal</p>
       </div>
 
       <nav class="flex-1 px-3 space-y-1 mt-2">

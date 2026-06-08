@@ -5,3 +5,9 @@
 [functions]
   directory = "netlify/functions"
   node_bundler = "esbuild"
+
+[[redirects]]
+  from = "/api/n8n/*"
+  to = "/.netlify/functions/n8n-proxy/:splat"
+  status = 200
+  force = true

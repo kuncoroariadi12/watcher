@@ -1,9 +1,8 @@
 export default async (request, context) => {
   const url = new URL(request.url)
 
-  // Dengan redirect /:splat, path yang masuk adalah setelah /api/n8n/
-  // misal: /api/n8n/webhook/daily-activity → splat = webhook/daily-activity
-  // tapi URL yang masuk ke function adalah /.netlify/functions/n8n-proxy/webhook/daily-activity
+  // url.pathname = /.netlify/functions/n8n-proxy/webhook/daily-activity
+  // Kita strip /.netlify/functions/n8n-proxy → /webhook/daily-activity
   const n8nPath = url.pathname.replace('/.netlify/functions/n8n-proxy', '')
   const n8nUrl = `https://n8n.devss.my.id${n8nPath}${url.search}`
 

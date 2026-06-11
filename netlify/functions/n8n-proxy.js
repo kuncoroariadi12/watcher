@@ -1,8 +1,5 @@
 export default async (request, context) => {
   const url = new URL(request.url)
-
-  // url.pathname = /.netlify/functions/n8n-proxy/webhook/daily-activity
-  // Kita strip /.netlify/functions/n8n-proxy → /webhook/daily-activity
   const n8nPath = url.pathname.replace('/.netlify/functions/n8n-proxy', '')
   const n8nUrl = `https://n8n.devss.my.id${n8nPath}${url.search}`
 
@@ -11,7 +8,14 @@ export default async (request, context) => {
   try {
     const response = await fetch(n8nUrl, {
       method: request.method,
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept': 'application/json, text/plain, */*',
+        'Accept-Language': 'en-US,en;q=0.9',
+        'Origin': 'https://mdmwatcher.netlify.app',
+        'Referer': 'https://mdmwatcher.netlify.app/',
+      },
       body: ['GET', 'HEAD'].includes(request.method) ? undefined : await request.text(),
     })
 

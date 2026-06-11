@@ -257,7 +257,7 @@ const formatNumber = (n: number) => {
 
 const { currentUser } = useAuth()
 
-const N8N_BASE_URL = '/api/n8n'
+const N8N_BASE_URL = 'https://n8n.devss.my.id'
 
 const loading = ref(false)
 const error = ref('')

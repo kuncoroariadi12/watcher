@@ -7,11 +7,11 @@ export default defineNuxtConfig({
     quiet: true,
   },
 
-//   routeRules: {
-//   '/api/n8n/**': {
-//     proxy: 'https://n8n.devss.my.id/**'
-//   }
-// },
+  routeRules: {
+  '/api/n8n/**': {
+    proxy: 'https://n8n.devss.my.id/**'
+  }
+},
 
   typescript: {
     typeCheck: false,

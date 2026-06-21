@@ -32,6 +32,18 @@
           Daily Activity
         </NuxtLink>
 
+        <NuxtLink to="/subdist"
+          :class="route.path === '/subdist'
+            ? 'bg-[#F03131] text-white'
+            : 'text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'"
+          class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M8.25 21v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21m0 0h4.5V3.545M12.75 21h7.5V10.75M2.25 21h1.5m18 0h-18M2.25 9l4.5-1.636M18.75 3l-1.5.545m0 6.205 3 1m1.5.5-1.5-.5M6.75 7.364V3h-3v18m3-13.636 10.5-3.819"/>
+          </svg>
+          Subdist
+        </NuxtLink>
+
         <NuxtLink to="/settings"
           :class="route.path === '/settings'
             ? 'bg-[#F03131] text-white'
@@ -71,7 +83,7 @@
     </aside>
 
     <!-- MAIN CONTENT -->
-    <main class="ml-52 flex-1">
+    <main class="ml-52 flex-1 min-w-0 overflow-x-hidden">
       <slot />
     </main>
 

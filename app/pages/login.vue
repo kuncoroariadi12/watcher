@@ -8,26 +8,28 @@
           Selamat datang di Watcher
         </h1>
         <p class="text-sm text-gray-500 mt-1">
-          Silahkan masuk dengan User MDM Anda untuk mengakses Watcher
+          Silahkan masuk dengan akun MG Anda untuk mengakses Watcher
         </p>
       </div>
 
       <!-- Form -->
       <div class="space-y-4">
 
-        <!-- Username -->
+        <!-- Employee ID -->
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">
-            Username <span class="text-red-500">*</span>
+            Employee ID <span class="text-red-500">*</span>
           </label>
           <input
-            v-model="form.username"
+            v-model="form.employeeId"
             type="text"
-            placeholder="Masukkan Username Anda"
+            placeholder="Contoh: MG139999"
             @keyup.enter="handleLogin"
+            :disabled="loading"
             class="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm
                    placeholder:text-gray-400 focus:outline-none focus:ring-2
-                   focus:ring-red-400 focus:border-transparent transition"
+                   focus:ring-red-400 focus:border-transparent transition
+                   disabled:bg-gray-50 disabled:text-gray-400"
           />
         </div>
 
@@ -42,9 +44,11 @@
               :type="showPassword ? 'text' : 'password'"
               placeholder="Masukkan password Anda"
               @keyup.enter="handleLogin"
+              :disabled="loading"
               class="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm
                      placeholder:text-gray-400 focus:outline-none focus:ring-2
-                     focus:ring-red-400 focus:border-transparent transition pr-10"
+                     focus:ring-red-400 focus:border-transparent transition pr-10
+                     disabled:bg-gray-50 disabled:text-gray-400"
             />
             <button
               type="button"
@@ -104,11 +108,18 @@
         <!-- Tombol Masuk -->
         <button
           @click="handleLogin"
+          :disabled="loading"
           class="w-full bg-[#F03131] hover:bg-red-600 active:bg-red-700
                  text-white font-medium py-2.5 rounded-lg text-sm
-                 transition duration-150 mt-2"
+                 transition duration-150 mt-2 flex items-center justify-center gap-2
+                 disabled:opacity-70 disabled:cursor-not-allowed"
         >
-          Masuk
+          <svg v-if="loading" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+            <path class="opacity-75" fill="currentColor"
+              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+          </svg>
+          {{ loading ? 'Memverifikasi...' : 'Masuk' }}
         </button>
 
       </div>
@@ -119,38 +130,33 @@
 <script setup lang="ts">
 definePageMeta({ layout: false })
 
-const { USERS } = useAuth()
-
 const form = reactive({
-  username : '',
-  password : '',
-  remember : false,
+  employeeId : '',
+  password   : '',
+  remember   : false,
 })
 
 const showPassword = ref(false)
 const errorMsg     = ref('')
+const loading      = ref(false)
 
-const handleLogin = () => {
+const handleLogin = async () => {
   errorMsg.value = ''
 
-  if (!form.username || !form.password) {
-    errorMsg.value = 'Username dan password wajib diisi'
+  if (!form.employeeId || !form.password) {
+    errorMsg.value = 'Employee ID dan password wajib diisi'
     return
   }
 
-  const user = USERS.find(
-    u => u.username === form.username.toLowerCase() &&
-         u.password === form.password
-  )
+  loading.value = true
 
-  if (!user) {
-    errorMsg.value = 'Username atau password salah'
+  const result = await loginWithCredentials(form.employeeId.trim(), form.password)
+
+  loading.value = false
+
+  if (!result.ok) {
+    errorMsg.value = result.error ?? 'Login gagal, coba lagi'
     return
-  }
-
-  // Simpan user ke sessionStorage
-  if (process.client) {
-    sessionStorage.setItem('watcher_user', JSON.stringify(user))
   }
 
   navigateTo('/emails')

@@ -206,10 +206,10 @@
                   </span>
                 </td>
                 <td class="px-3 py-3.5 max-w-xs">
-                  <p class="font-semibold text-gray-800 dark:text-gray-100 text-xs leading-snug truncate" :title="act.deskripsi">
+                  <p class="font-semibold text-xs text-gray-800 mt-0.5">{{ act.kodeAP }}</p>
+                  <p class="font-medium text-gray-400 dark:text-gray-100 text-xs leading-snug truncate" :title="act.deskripsi">
                     {{ act.deskripsi }}
                   </p>
-                  <p class="text-xs text-gray-400 mt-0.5">{{ act.kodeAP }}</p>
                 </td>
                 <td class="px-3 py-3.5 text-xs text-gray-400 whitespace-nowrap">{{ act.subDiv }}</td>
                 <td class="px-3 py-3.5 text-center text-sm font-medium text-gray-700 dark:text-gray-300">{{ act.jmlSetting }}</td>
@@ -327,7 +327,7 @@ const fetchActivity = async () => {
   loading.value = true
   error.value = ''
   try {
-    const username = currentUser.value?.username || currentUser.value?.id || 'kuncoro'
+    const username = currentUser.value?.pic_name || currentUser.value?.id || 'KUNCORO'
     const res = await fetch(
       `${N8N_BASE_URL}/webhook/daily-activity?user=${encodeURIComponent(username)}&date=${selectedDate.value}`
     )

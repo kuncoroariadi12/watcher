@@ -1,53 +1,85 @@
-export const USERS = [
-  {
-    id: 'kuncoro', name: 'Kuncoro Ariadi', username: 'kuncoro', password: '123',
-    role: 'setter', title: 'MDM Setter', divisi: ['M2', 'M3'],
-    initial: 'KA', color: 'bg-red-500',
-  },
-  {
-    id: 'maulana', name: 'Maulana', username: 'maulana', password: '123',
-    role: 'section_head', title: 'Section Head', divisi: ['M1','M2','M3','M4','M5','MT'],
-    initial: 'ML', color: 'bg-blue-500',
-  },
-  {
-    id: 'wira', name: 'Wira', username: 'wira', password: '123',
-    role: 'setter', title: 'MDM Setter', divisi: ['M5'],
-    initial: 'WR', color: 'bg-purple-500',
-  },
-  {
-    id: 'lia', name: 'Lia', username: 'lia', password: '123',
-    role: 'setter', title: 'MDM Setter', divisi: ['MT'],
-    initial: 'LI', color: 'bg-pink-500',
-  },
-  {
-    id: 'mechell', name: 'Mechell', username: 'mechell', password: '123',
-    role: 'setter', title: 'MDM Setter', divisi: ['M1', 'M4'],
-    initial: 'MC', color: 'bg-orange-500',
-  },
-  {
-    id: 'irhandy', name: 'Irhandy', username: 'irhandy', password: '123',
-    role: 'setter', title: 'MDM Setter', divisi: ['M3'],
-    initial: 'IH', color: 'bg-green-500',
-  },
-]
+import { supabase } from './useSupabase'
 
-// Default user untuk SSR (server tidak punya sessionStorage)
-const DEFAULT_USER = USERS.find(u => u.id === 'kuncoro')!
+// Shape user yang dipakai di seluruh app
+export interface WatcherUser {
+  id: string
+  employee_id: string
+  name: string
+  role: string
+  title: string
+  divisi: string[]
+  initial: string
+  color: string
+  pic_name: string
+}
 
-// State global persistent
-const _currentUser = ref<any>(DEFAULT_USER)
+// Default user kosong untuk SSR (tidak ada session di server)
+const EMPTY_USER: WatcherUser = {
+  id: '', employee_id: '', name: '', role: '',
+  title: '', divisi: [], initial: '', color: '', pic_name: '',
+}
 
+// State global persistent — satu instance untuk seluruh app
+const _currentUser = ref<WatcherUser>(EMPTY_USER)
+const _isLoggedIn  = ref(false)
+
+// ─── Login via Supabase ───────────────────────────────────────────────────────
+export const loginWithCredentials = async (
+  employeeId: string,
+  password: string
+): Promise<{ ok: boolean; error?: string }> => {
+  // Normalisasi: uppercase employee_id supaya mg138690 / MG138690 / Mg138690 semua match
+  const { data, error } = await supabase
+    .from('users')
+    .select('*')
+    .eq('employee_id', employeeId.toUpperCase())
+    .eq('password', password)
+    .eq('is_active', true)
+    .single()
+
+  if (error || !data) {
+    return { ok: false, error: 'Employee ID atau password salah' }
+  }
+
+  const user: WatcherUser = {
+    id:          data.id,
+    employee_id: data.employee_id,
+    name:        data.name,
+    role:        data.role,
+    title:       data.title,
+    divisi:      data.divisi ?? [],
+    initial:     data.initial,
+    color:       data.color,
+    pic_name:    data.pic_name,
+  }
+
+  // Simpan ke sessionStorage
+  if (process.client) {
+    sessionStorage.setItem('watcher_user', JSON.stringify(user))
+  }
+
+  _currentUser.value = user
+  _isLoggedIn.value  = true
+
+  return { ok: true }
+}
+
+// ─── Composable ──────────────────────────────────────────────────────────────
 export const useAuth = () => {
-  // Hanya load dari sessionStorage di client
+
+  // Load session dari sessionStorage saat client mount
   onMounted(() => {
-    const stored = sessionStorage.getItem('watcher_user')
-    if (stored) {
-      try {
-        const parsed = JSON.parse(stored)
-        if (parsed && parsed.id) {
-          _currentUser.value = parsed
-        }
-      } catch { /* skip */ }
+    if (!_isLoggedIn.value) {
+      const stored = sessionStorage.getItem('watcher_user')
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored) as WatcherUser
+          if (parsed?.id) {
+            _currentUser.value = parsed
+            _isLoggedIn.value  = true
+          }
+        } catch { /* skip */ }
+      }
     }
   })
 
@@ -63,13 +95,14 @@ export const useAuth = () => {
     if (process.client) {
       sessionStorage.removeItem('watcher_user')
     }
-    _currentUser.value = DEFAULT_USER
+    _currentUser.value = EMPTY_USER
+    _isLoggedIn.value  = false
     navigateTo('/login')
   }
 
   return {
-    USERS,
     currentUser: _currentUser,
+    isLoggedIn:  _isLoggedIn,
     greeting,
     logout,
   }

@@ -434,6 +434,15 @@
       <div v-if="rowMenuTarget"
         class="fixed z-[60] bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-100 dark:border-gray-700 py-1 w-44"
         :style="{ top: rowMenuPos.y + 'px', left: rowMenuPos.x + 'px' }">
+        <button @click="copySelectedText"
+          class="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition text-left">
+          <svg class="w-4 h-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+          </svg>
+          Salin
+        </button>
+        <div class="my-1 border-t border-gray-100 dark:border-gray-700"></div>
         <button @click="openEditModal(rowMenuTarget!)"
           class="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition text-left">
           <svg class="w-4 h-4 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -777,21 +786,44 @@ const getColumnLabel = (key: keyof Subdist) => SUBDIST_COLUMNS.find(c => c.key =
 // ===================== ROW CONTEXT MENU (klik kanan) =====================
 const rowMenuTarget = ref<Subdist | null>(null)
 const rowMenuPos = ref({ x: 0, y: 0 })
+const rowMenuSelectedText = ref('')
 
 const openRowMenu = (e: MouseEvent, row: Subdist) => {
+  // Tangkap teks yang sedang di-block/seleksi TEPAT saat klik kanan terjadi,
+  // sebelum menu custom kita render (yang bisa membuat seleksi browser hilang).
+  rowMenuSelectedText.value = window.getSelection()?.toString().trim() || ''
+
   rowMenuTarget.value = row
-  const menuW = 176, menuH = 96
+  const menuW = 176, menuH = 140
   let x = e.clientX, y = e.clientY
   if (x + menuW > window.innerWidth) x = window.innerWidth - menuW - 8
   if (y + menuH > window.innerHeight) y = window.innerHeight - menuH - 8
   rowMenuPos.value = { x, y }
 }
 const openRowMenuFromButton = (e: MouseEvent, row: Subdist) => {
+  rowMenuSelectedText.value = ''
   const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
   rowMenuTarget.value = row
   rowMenuPos.value = { x: rect.right - 176, y: rect.bottom + 4 }
 }
 const closeRowMenu = () => { rowMenuTarget.value = null }
+
+const copySelectedText = async () => {
+  // Kalau ada teks yang di-block, salin itu. Kalau tidak ada seleksi sama sekali
+  // (klik kanan tanpa block), salin Kode Subdist sebagai fallback yang paling berguna.
+  const textToCopy = rowMenuSelectedText.value || String(rowMenuTarget.value?.kode_subdist ?? '')
+  if (!textToCopy) {
+    closeRowMenu()
+    return
+  }
+  try {
+    await navigator.clipboard.writeText(textToCopy)
+    showToast(`Disalin: ${textToCopy}`)
+  } catch {
+    showToast('Gagal menyalin ke clipboard')
+  }
+  closeRowMenu()
+}
 
 // ===================== INLINE CELL EDIT (double click) =====================
 const editingCell = ref<{ id: string; field: keyof Subdist; kodeSubdist: number } | null>(null)
@@ -938,8 +970,8 @@ onUnmounted(() => {
   --subdist-lock-border: #4B5563;
 }
 </style>
-<!-- 
-<style scoped>
+
+<!-- <style scoped>
 /* Sel sticky butuh background SOLID (bukan transparan) agar konten kolom
    lain yang di-scroll di baliknya benar-benar tertutup, bukan transparan. */
 .subdist-sticky-cell {

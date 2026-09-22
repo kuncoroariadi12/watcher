@@ -3,9 +3,26 @@
 
     <!-- SIDEBAR -->
     <aside class="w-52 bg-white dark:bg-gray-800 flex flex-col fixed h-full shadow-sm z-10">
-      <div class="px-5 pt-6 pb-4">
-        <h1 class="text-2xl font-bold text-[#F03131]">Watcher</h1>
-        <p class="text-xs text-gray-400 mt-0.5">MDM Portal</p>
+      <!-- BRAND: logo dan teks terpisah, teks tetap teks biasa -->
+      <div class="flex items-center gap-3 px-5 pt-6 pb-4">
+        <img src="/images/logo-watcher.png" alt="Logo Watcher"
+             width="39" height="40" decoding="async" fetchpriority="high"
+             class="h-10 w-auto shrink-0 dark:hidden" />
+        <img src="/images/logo-watcher-dark.png" alt="" aria-hidden="true"
+             width="39" height="40" decoding="async" loading="lazy"
+             class="h-10 w-auto shrink-0 hidden dark:block" />
+
+        <div class="min-w-0">
+          <h1 class="brand-wordmark text-[22px] leading-none text-[#0A1642] dark:text-white">
+            Watcher
+          </h1>
+          <div class="flex items-center gap-1.5 mt-1.5">
+            <span class="h-[3px] w-5 rounded-full bg-[#C6232B]"></span>
+            <p class="text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400 leading-none">
+              MDM Portal
+            </p>
+          </div>
+        </div>
       </div>
 
       <nav class="flex-1 px-3 space-y-1 mt-2 overflow-y-auto">
@@ -118,3 +135,23 @@
 const route = useRoute()
 const { currentUser, logout } = useAuth()
 </script>
+
+<style>
+/* ── Wordmark Watcher ─────────────────────────────────────────────
+   Exo 2 ExtraBold, di-subset hanya huruf W A T C H E R (~1 KB).
+   Kalau nanti teks brand diubah, font perlu di-subset ulang. */
+@font-face {
+  font-family: 'Watcher Brand';
+  src: url('/fonts/exo2-800-watcher.woff2') format('woff2');
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+.brand-wordmark {
+  font-family: 'Watcher Brand', ui-sans-serif, system-ui, sans-serif;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+</style>

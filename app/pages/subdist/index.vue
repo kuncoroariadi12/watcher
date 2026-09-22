@@ -59,9 +59,9 @@
             <p class="text-xs text-gray-400 mt-1">{{ filteredSubdist.length }} dari {{ subdist.length }} subdist ditampilkan</p>
           </div>
 
-          <div class="flex items-center gap-2 flex-wrap">
+          <div class="flex items-center gap-2 flex-wrap w-full sm:w-auto">
             <!-- Search -->
-            <div class="relative">
+            <div class="relative w-full sm:w-auto">
               <svg class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2"
                 fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -69,7 +69,7 @@
               </svg>
               <input v-model="searchQuery" type="text" placeholder="Cari kode, nama, area..."
                 class="pl-9 pr-4 py-2 border border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg text-sm
-                       focus:outline-none focus:ring-2 focus:ring-red-300 w-56"/>
+                       focus:outline-none focus:ring-2 focus:ring-red-300 w-full sm:w-56"/>
             </div>
 
             <!-- Filter Wilayah -->
@@ -88,7 +88,7 @@
 
               <div v-if="showFilterMenu" class="fixed inset-0 z-30" @click="showFilterMenu = false"></div>
               <div v-if="showFilterMenu"
-                class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-100 dark:border-gray-700 py-1.5 z-40 max-h-72 overflow-y-auto">
+                class="absolute right-0 mt-2 max-sm:fixed max-sm:inset-x-4 max-sm:!w-auto w-48 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-100 dark:border-gray-700 py-1.5 z-40 max-h-72 overflow-y-auto">
                 <button @click="filterWilGrsm = ''; showFilterMenu = false"
                   class="w-full text-left px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition"
                   :class="!filterWilGrsm ? 'text-[#F03131] font-semibold bg-red-50/60 dark:bg-red-900/10' : 'text-gray-600 dark:text-gray-300'">
@@ -121,7 +121,7 @@
 
               <div v-if="showColumnMenu" class="fixed inset-0 z-30" @click="showColumnMenu = false"></div>
               <div v-if="showColumnMenu"
-                class="absolute right-0 mt-2 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-100 dark:border-gray-700 w-72 z-40 max-h-[28rem] flex flex-col">
+                class="absolute right-0 mt-2 max-sm:fixed max-sm:inset-x-4 max-sm:!w-auto bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-100 dark:border-gray-700 w-72 z-40 max-h-[28rem] flex flex-col">
                 <div class="px-4 py-3 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between flex-shrink-0">
                   <p class="text-sm font-semibold text-gray-800 dark:text-white">Tampilkan Kolom</p>
                   <div class="flex items-center gap-3">
@@ -182,7 +182,7 @@
 
               <div v-if="showLockMenu" class="fixed inset-0 z-30" @click="showLockMenu = false"></div>
               <div v-if="showLockMenu"
-                class="absolute right-0 mt-2 bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-100 dark:border-gray-700 w-64 z-40 max-h-96 flex flex-col">
+                class="absolute right-0 mt-2 max-sm:fixed max-sm:inset-x-4 max-sm:!w-auto bg-white dark:bg-gray-800 rounded-xl shadow-2xl border border-gray-100 dark:border-gray-700 w-64 z-40 max-h-96 flex flex-col">
                 <div class="px-4 py-3 border-b border-gray-100 dark:border-gray-700 flex-shrink-0">
                   <p class="text-sm font-semibold text-gray-800 dark:text-white">Kunci Kolom (Freeze)</p>
                   <p class="text-xs text-gray-400 mt-0.5">Kolom terkunci tetap terlihat saat scroll ke kanan</p>
@@ -804,7 +804,7 @@ const openRowMenuFromButton = (e: MouseEvent, row: Subdist) => {
   rowMenuSelectedText.value = ''
   const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
   rowMenuTarget.value = row
-  rowMenuPos.value = { x: rect.right - 176, y: rect.bottom + 4 }
+  rowMenuPos.value = { x: Math.max(8, rect.right - 176), y: rect.bottom + 4 }
 }
 const closeRowMenu = () => { rowMenuTarget.value = null }
 

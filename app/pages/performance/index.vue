@@ -10,8 +10,8 @@
         </p>
       </div>
 
-      <div class="flex items-end gap-3 flex-wrap">
-        <div class="flex flex-col gap-1">
+      <div class="flex items-end gap-2 sm:gap-3 flex-wrap w-full sm:w-auto">
+        <div class="flex flex-col gap-1 flex-1 sm:flex-none min-w-0">
           <label class="text-xs font-medium text-gray-400">PIC</label>
           <div
             class="flex items-center gap-2.5 px-3 py-[7px] rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700">
@@ -76,7 +76,7 @@
       </div>
 
       <!-- ===== KPI Cards ===== -->
-      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-5">
+      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4 mb-5">
         <StatCard label="Total Setting" :value="fmt(kartu.totalSetting)" color="#F03131" :icon-path="ICON.chart" />
         <StatCard label="Akurasi Setting" :value="kartu.akurasiSetting.toFixed(2)" suffix="%" color="#10B981"
           :bar="kartu.akurasiSetting" :icon-path="ICON.check" />
@@ -87,7 +87,7 @@
       </div>
 
       <!-- ===== Charts ===== -->
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4">
 
         <ChartCard title="SL Setting" subtitle="Setting vs Konfirmasi" :badge="badgeYTD">
           <DonutChart :series="slSetting" :center-value="slSetting[0].value.toFixed(2)" center-label="0-1 Hari" />
@@ -105,7 +105,13 @@
           <ChartCard title="Average Weekly Jumlah Settingan YTD"
             subtitle="Total JML Setting dibagi jumlah hari aktif pada minggu tersebut"
             :badge="`W1 – W${weekly.labels.length}`">
-            <LineChart :labels="weekly.labels" :values="weekly.values" color="#F03131" x-label="Week" />
+            <!-- Di HP grafik 39+ minggu terlalu rapat: beri lebar minimum & bisa digeser -->
+            <div ref="weeklyScrollEl" class="overflow-x-auto md:overflow-visible -mx-1 px-1 pt-8 md:pt-0">
+              <div class="min-w-[720px] md:min-w-0">
+                <LineChart :labels="weekly.labels" :values="weekly.values" color="#F03131" x-label="Week" />
+              </div>
+            </div>
+            <p class="md:hidden text-[11px] text-gray-400 mt-1">Geser grafik ke samping untuk melihat semua minggu.</p>
 
             <div class="flex items-center gap-6 mt-4 pt-3 border-t border-gray-100 dark:border-gray-700 flex-wrap">
               <div v-for="s in weeklyStats" :key="s.label" class="flex items-center gap-2">
@@ -124,7 +130,7 @@
           </ChartCard>
         </div>
 
-        <div class="lg:col-span-3 grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div class="lg:col-span-3 grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
 
           <ChartCard title="Report Audit By Periode" subtitle="Jumlah audit settingan"
             :badge="auditMode === 'bulan' ? `Min ${AUDIT_TARGET}/bln` : `Min ${AUDIT_TARGET * 3}/quartal`">
@@ -182,7 +188,7 @@
 
       </div>
 
-      <p class="text-right text-xs text-gray-400 mt-4">
+      <p class="text-center sm:text-right text-xs text-gray-400 mt-4">
         🕐 {{ lastUpdated }} · {{ activePic || '—' }} · YTD {{ tahun }}
       </p>
 
@@ -191,7 +197,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed, watch, onMounted, nextTick } from 'vue'
 import StatCard from '~/components/charts/StatCard.vue'
 import ChartCard from '~/components/charts/ChartCard.vue'
 import DonutChart from '~/components/charts/DonutChart.vue'
@@ -234,6 +240,14 @@ const auditMonth = ref(
   `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`
 )
 const perf = ref<any>(null)
+
+// HP: setelah data masuk, geser grafik mingguan ke minggu terbaru (ujung kanan)
+const weeklyScrollEl = ref<HTMLElement | null>(null)
+watch(perf, async () => {
+  await nextTick()
+  const el = weeklyScrollEl.value
+  if (el && el.scrollWidth > el.clientWidth) el.scrollLeft = el.scrollWidth
+})
 const audit = ref<any>(null)
 const lastUpdated = ref('')
 

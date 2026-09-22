@@ -2,14 +2,14 @@
   <div class="p-6 dark:bg-gray-900 min-h-screen">
 
     <!-- Header -->
-    <div class="flex items-center justify-between mb-6">
-      <div>
-        <h2 class="text-xl font-bold text-gray-800 dark:text-white">
+    <div class="flex items-center justify-between mb-6 gap-3">
+      <div class="min-w-0">
+        <h2 class="text-lg sm:text-xl font-bold text-gray-800 dark:text-white">
           {{ greeting }}, {{ currentUser.name.split(' ')[0] }}!
         </h2>
-        <p class="text-sm text-gray-400 mt-0.5">{{ currentDateTime }}</p>
+        <p class="text-xs sm:text-sm text-gray-400 mt-0.5">{{ currentDateTime }}</p>
       </div>
-      <div class="flex items-center gap-2">
+      <div class="flex items-center gap-1 sm:gap-2 shrink-0">
         <!-- Notif -->
         <button class="p-2 rounded-lg hover:bg-white dark:hover:bg-gray-700 transition">
           <svg class="w-5 h-5 text-gray-500 dark:text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -52,20 +52,21 @@
     <!-- Table Section -->
     <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm">
       <div class="px-5 pt-5 pb-4 flex items-center justify-between flex-wrap gap-3">
-        <div>
+        <div class="w-full sm:w-auto min-w-0">
           <h3 class="font-semibold text-gray-800 dark:text-white">Daftar Email</h3>
-          <div class="flex items-center gap-2 mt-3 flex-wrap">
+          <!-- Mobile: tab digeser ke samping. Desktop: turun baris seperti biasa -->
+          <div class="flex items-center gap-2 mt-3 overflow-x-auto sm:flex-wrap -mx-5 px-5 sm:mx-0 sm:px-0 pb-1 sm:pb-0 no-scrollbar">
             <button v-for="tab in tabs" :key="tab.value"
               @click="activeTab = tab.value"
               :class="activeTab === tab.value
                 ? 'bg-[#F03131] text-white border-[#F03131]'
                 : 'bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-600 hover:bg-gray-50'"
-              class="px-4 py-1.5 rounded-full text-sm font-medium border transition">
+              class="shrink-0 px-4 py-1.5 rounded-full text-sm font-medium border transition">
               {{ tab.label }}
             </button>
           </div>
         </div>
-        <div class="relative">
+        <div class="relative w-full sm:w-auto">
           <svg class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2"
             fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -73,7 +74,7 @@
           </svg>
           <input v-model="searchQuery" type="text" placeholder="Cari sesuatu..."
             class="pl-9 pr-4 py-2 border border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg text-sm
-                   focus:outline-none focus:ring-2 focus:ring-red-300 w-52"/>
+                   focus:outline-none focus:ring-2 focus:ring-red-300 w-full sm:w-52"/>
         </div>
       </div>
 
@@ -81,7 +82,74 @@
         Memuat data email...
       </div>
 
-      <div v-else class="overflow-visible">
+      <!-- ===== MOBILE (< 768px): daftar kartu ===== -->
+      <ul v-else-if="isMobile" class="divide-y divide-gray-100 dark:divide-gray-700 border-t border-gray-100 dark:border-gray-700">
+        <li v-for="email in filteredEmails" :key="email.message_id"
+          @click="openDetail(email)"
+          class="relative flex gap-3 pl-5 pr-2 py-3.5 active:bg-gray-50 dark:active:bg-gray-700/50 cursor-pointer"
+          :class="!isRead(email.message_id) && 'bg-red-50/30 dark:bg-red-900/5'">
+
+          <!-- Titik belum dibaca -->
+          <span v-if="!isRead(email.message_id)"
+            class="absolute left-2 top-5 w-1.5 h-1.5 rounded-full bg-[#F03131]" aria-label="Belum dibaca"></span>
+
+          <div class="flex-1 min-w-0">
+            <div class="flex items-baseline justify-between gap-2">
+              <p class="text-sm truncate"
+                :class="isRead(email.message_id) ? 'text-gray-500 dark:text-gray-400' : 'text-gray-900 dark:text-white font-semibold'">
+                {{ email.sender_name }}
+              </p>
+              <span class="text-[11px] text-gray-400 whitespace-nowrap shrink-0">
+                {{ formatDate(email.received_at) }}
+              </span>
+            </div>
+
+            <p class="text-[13px] leading-snug mt-0.5 line-clamp-2 break-words"
+              :class="isRead(email.message_id) ? 'text-gray-400' : 'text-gray-800 dark:text-gray-100 font-medium'">
+              {{ email.subject }}
+            </p>
+
+            <div class="flex items-center gap-1.5 mt-2 flex-wrap">
+              <span v-if="email.divisi" :class="getDivisiBadgeClass(email.divisi)"
+                class="px-2 py-0.5 rounded-full text-[11px] font-medium">
+                {{ email.divisi }}
+              </span>
+              <span :class="getStatusClass(email.setting_status)"
+                class="px-2 py-0.5 rounded-full text-[11px] font-medium">
+                {{ getStatusLabel(email.setting_status) }}
+              </span>
+              <span class="text-[11px] text-gray-400">{{ getKategoriLabel(email.kategori) }}</span>
+              <span class="text-[11px] text-gray-300 dark:text-gray-600">&bull;</span>
+              <span v-if="email.pic" class="flex items-center gap-1 text-[11px] text-gray-500 dark:text-gray-300">
+                <span :class="getPicColor(email.pic)"
+                  class="w-4 h-4 rounded-full flex items-center justify-center text-white text-[9px] font-bold">
+                  {{ email.pic[0] }}
+                </span>
+                {{ email.pic }}
+              </span>
+              <span v-else class="text-[11px] text-gray-400 italic">Open</span>
+            </div>
+          </div>
+
+          <!-- Action (area sentuh 40x40) -->
+          <button @click.stop="toggleActionMenu($event, email)"
+            class="self-start -mt-1 w-10 h-10 flex items-center justify-center rounded-lg active:bg-gray-100 dark:active:bg-gray-600 shrink-0"
+            aria-label="Aksi email">
+            <svg class="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
+              <circle cx="12" cy="5" r="1.5"/>
+              <circle cx="12" cy="12" r="1.5"/>
+              <circle cx="12" cy="19" r="1.5"/>
+            </svg>
+          </button>
+        </li>
+
+        <li v-if="filteredEmails.length === 0" class="py-16 text-center">
+          <p class="text-gray-400 text-sm">Tidak ada email ditemukan</p>
+        </li>
+      </ul>
+
+      <!-- ===== DESKTOP / TABLET (>= 768px): tabel ===== -->
+      <div v-else class="overflow-x-auto">
         <table class="w-full text-sm">
           <thead>
             <tr class="border-t border-gray-100 dark:border-gray-700">
@@ -350,6 +418,7 @@ definePageMeta({ layout: 'dashboard' })
 const { currentUser, greeting } = useAuth()
 const { emails, loading, isRead, markAsRead, markAsUnread, fetchEmails, refreshEmails, updateEmailStatus, subscribeRealtime } = useEmails()
 const { isDark, toggle: toggleDark } = useDarkMode()
+const isMobile = useIsMobile()
 
 onMounted(() => {
   fetchEmails()
@@ -441,7 +510,8 @@ const updateMenuPosition = () => {
   const showAbove = spaceBelow < dropdownH && spaceAbove > spaceBelow
 
   menuPos.value = {
-    x: rect.right - 208, // koordinat viewport langsung (position: fixed)
+    // koordinat viewport langsung (position: fixed), dijaga tidak keluar layar di HP
+    x: Math.max(8, Math.min(rect.right - 208, window.innerWidth - 216)),
     y: showAbove ? rect.top - dropdownH - 4 : rect.bottom + 4,
   }
 }

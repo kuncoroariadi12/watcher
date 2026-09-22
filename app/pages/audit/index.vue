@@ -10,25 +10,26 @@
         </p>
       </div>
 
-      <div class="flex items-end gap-3 flex-wrap">
-        <div class="flex flex-col gap-1">
+      <div class="flex items-end gap-2 sm:gap-3 flex-wrap w-full sm:w-auto">
+        <div class="flex flex-col gap-1 w-full sm:w-auto">
           <label class="text-xs font-medium text-gray-400">Bulan</label>
           <input type="month" v-model="selectedMonth"
-            class="px-3 py-2 text-sm border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-300" />
+            class="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-300" />
         </div>
 
         <button @click="toggleAutoRefresh"
-          class="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg border transition"
+          class="flex-1 sm:flex-none justify-center flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg border transition"
           :class="autoRefresh
             ? 'bg-green-50 text-green-600 border-green-200 hover:bg-green-100 dark:bg-green-900/20 dark:border-green-700 dark:text-green-400'
             : 'bg-gray-50 text-gray-400 border-gray-200 hover:bg-gray-100 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-400'">
           <span class="w-2 h-2 rounded-full flex-shrink-0"
             :class="autoRefresh ? 'bg-green-500 animate-pulse' : 'bg-gray-300'"></span>
-          {{ autoRefresh ? 'Auto Refresh ON' : 'Auto Refresh OFF' }}
+          <span class="sm:hidden">{{ autoRefresh ? 'Auto ON' : 'Auto OFF' }}</span>
+          <span class="hidden sm:inline">{{ autoRefresh ? 'Auto Refresh ON' : 'Auto Refresh OFF' }}</span>
         </button>
 
         <button @click="fetchAudit" :disabled="loading"
-          class="flex items-center gap-2 px-4 py-2 bg-[#F03131] text-white text-sm font-medium rounded-lg hover:bg-red-600 disabled:opacity-60 disabled:cursor-not-allowed transition">
+          class="flex-1 sm:flex-none justify-center flex items-center gap-2 px-4 py-2 bg-[#F03131] text-white text-sm font-medium rounded-lg hover:bg-red-600 disabled:opacity-60 disabled:cursor-not-allowed transition">
           <svg class="w-4 h-4" :class="{ 'animate-spin': loading }" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
               d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -234,15 +235,15 @@
             </p>
           </div>
 
-          <div class="flex items-center gap-2 flex-wrap">
-            <div class="relative">
+          <div class="flex items-center gap-2 flex-wrap w-full sm:w-auto">
+            <div class="relative w-full sm:w-auto">
               <svg class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" viewBox="0 0 24 24"
                 stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                   d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
               <input v-model="searchQuery" type="text" placeholder="Cari settingan, kategori..."
-                class="pl-9 pr-4 py-2 border border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-300 w-56" />
+                class="pl-9 pr-4 py-2 border border-gray-200 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-300 w-full sm:w-56" />
             </div>
 
             <button v-for="f in hasilFilters" :key="f.value"
@@ -264,6 +265,55 @@
           <p class="text-gray-400 text-sm">Tidak ada audit pada periode ini</p>
         </div>
 
+        <!-- ===== MOBILE (< 768px): kartu ===== -->
+        <template v-else-if="isMobile">
+          <ul class="divide-y divide-gray-100 dark:divide-gray-700 border-t border-gray-100 dark:border-gray-700">
+            <li v-for="a in filteredAudits" :key="a.no" class="px-4 py-3.5">
+              <div class="flex items-start justify-between gap-3">
+                <p class="text-sm font-medium text-gray-800 dark:text-gray-100 leading-snug break-words min-w-0">
+                  {{ a.settingan || '-' }}
+                </p>
+                <span class="px-2.5 py-0.5 rounded-full text-[11px] font-medium whitespace-nowrap shrink-0" :class="getHasilClass(a.hasil)">
+                  {{ a.hasil === 'OK' ? 'Tuntas' : 'Temuan' }}
+                </span>
+              </div>
+
+              <div class="flex items-center gap-1.5 mt-1.5 flex-wrap text-[11px] text-gray-400">
+                <span class="px-2 py-0.5 rounded-full font-medium bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300">
+                  {{ a.kategori || '-' }}
+                </span>
+                <span>{{ a.pic }}</span>
+                <span>&bull;</span>
+                <span>{{ a.tanggal }}</span>
+              </div>
+
+              <!-- Progres download subdist -->
+              <div class="flex items-center gap-2 mt-2.5">
+                <div class="flex-1 h-1.5 rounded-full bg-gray-100 dark:bg-gray-700 overflow-hidden">
+                  <div class="h-full rounded-full"
+                    :class="a.belumDownload > 0 ? 'bg-amber-400' : 'bg-green-500'"
+                    :style="{ width: (a.jmlSubdist ? (a.sudahDownload / a.jmlSubdist) * 100 : 0) + '%' }"></div>
+                </div>
+                <span class="text-[11px] font-semibold text-gray-700 dark:text-gray-200 tabular-nums whitespace-nowrap">
+                  {{ a.sudahDownload }}/{{ a.jmlSubdist }} download
+                </span>
+              </div>
+              <p v-if="a.belumDownload > 0" class="text-[11px] text-amber-600 dark:text-amber-400 mt-1">
+                {{ a.belumDownload }} subdist belum download
+              </p>
+
+              <p v-if="a.action" class="text-xs text-gray-500 dark:text-gray-400 mt-2 break-words">
+                <span class="text-gray-400">Action:</span> {{ a.action }}
+              </p>
+            </li>
+          </ul>
+          <div class="flex items-center justify-between px-4 py-3 border-t-2 border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/30 rounded-b-xl">
+            <span class="text-xs font-medium text-gray-400">TOTAL AUDIT</span>
+            <span class="text-sm font-bold text-gray-800 dark:text-white">{{ filteredAudits.length }}</span>
+          </div>
+        </template>
+
+        <!-- ===== DESKTOP / TABLET: tabel ===== -->
         <div v-else class="overflow-x-auto">
           <table class="w-full text-sm">
             <thead>
@@ -358,6 +408,8 @@ import DonutChart from '~/components/charts/DonutChart.vue'
 import { useAuth } from '~/composables/useAuth'
 
 definePageMeta({ layout: 'dashboard' })
+
+const isMobile = useIsMobile()
 
 const { currentUser } = useAuth()
 

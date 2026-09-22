@@ -2,35 +2,36 @@
   <div class="p-6 dark:bg-gray-900 min-h-screen">
 
     <!-- Header -->
-    <div class="flex items-center justify-between mb-6">
+    <div class="flex items-center justify-between mb-6 flex-wrap gap-3">
       <div>
         <h2 class="text-xl font-bold text-gray-800 dark:text-white">Daily Activity</h2>
         <p class="text-sm text-gray-400 mt-0.5">Rekap produktivitas harian Anda</p>
       </div>
-      <div class="flex items-end gap-3">
-        <div class="flex flex-col gap-1">
+      <div class="flex items-end gap-2 sm:gap-3 flex-wrap w-full sm:w-auto">
+        <div class="flex flex-col gap-1 w-full sm:w-auto">
           <label class="text-xs font-medium text-gray-400">Tanggal</label>
           <input
             type="date"
             v-model="selectedDate"
             @change="fetchActivity"
-            class="px-3 py-2 text-sm border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-300"
+            class="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-300"
           />
         </div>
         <button
           @click="toggleAutoRefresh"
-          class="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg border transition"
+          class="flex-1 sm:flex-none justify-center flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg border transition"
           :class="autoRefresh
             ? 'bg-green-50 text-green-600 border-green-200 hover:bg-green-100 dark:bg-green-900/20 dark:border-green-700 dark:text-green-400'
             : 'bg-gray-50 text-gray-400 border-gray-200 hover:bg-gray-100 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-400'"
         >
           <span class="w-2 h-2 rounded-full flex-shrink-0" :class="autoRefresh ? 'bg-green-500 animate-pulse' : 'bg-gray-300'"></span>
-          {{ autoRefresh ? 'Auto Refresh ON' : 'Auto Refresh OFF' }}
+          <span class="sm:hidden">{{ autoRefresh ? 'Auto ON' : 'Auto OFF' }}</span>
+          <span class="hidden sm:inline">{{ autoRefresh ? 'Auto Refresh ON' : 'Auto Refresh OFF' }}</span>
         </button>
         <button
           @click="fetchActivity"
           :disabled="loading"
-          class="flex items-center gap-2 px-4 py-2 bg-[#F03131] text-white text-sm font-medium rounded-lg hover:bg-red-600 disabled:opacity-60 disabled:cursor-not-allowed transition"
+          class="flex-1 sm:flex-none justify-center flex items-center gap-2 px-4 py-2 bg-[#F03131] text-white text-sm font-medium rounded-lg hover:bg-red-600 disabled:opacity-60 disabled:cursor-not-allowed transition"
         >
           <svg class="w-4 h-4" :class="{ 'animate-spin': loading }" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
@@ -151,7 +152,7 @@
 
       <!-- Activity Table -->
       <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm">
-        <div class="px-5 pt-5 pb-4 flex items-center justify-between">
+        <div class="px-5 pt-5 pb-4 flex items-center justify-between flex-wrap gap-2">
           <h3 class="font-semibold text-gray-800 dark:text-white">Detail Aktivitas</h3>
           <span class="text-xs text-gray-400">{{ data.activities.length }} aktivitas ditemukan</span>
         </div>
@@ -164,7 +165,55 @@
           <p class="text-gray-400 text-sm">Tidak ada aktivitas pada tanggal ini</p>
         </div>
 
-        <!-- Table -->
+        <!-- ===== MOBILE (< 768px): kartu ===== -->
+        <template v-else-if="isMobile">
+          <ul class="divide-y divide-gray-100 dark:divide-gray-700 border-t border-gray-100 dark:border-gray-700">
+            <li v-for="act in data.activities" :key="act.no" class="px-4 py-3.5">
+              <div class="flex items-start justify-between gap-3">
+                <div class="min-w-0">
+                  <div class="flex items-center gap-2 flex-wrap">
+                    <span class="text-[11px] text-gray-400 font-medium">#{{ act.no }}</span>
+                    <span class="px-2 py-0.5 rounded-full text-[11px] font-medium"
+                      :class="{
+                        'bg-blue-100 text-blue-600 dark:bg-blue-900/40 dark:text-blue-300': act.type === 'SETTING',
+                        'bg-green-100 text-green-600 dark:bg-green-900/40 dark:text-green-300': act.type === 'RELEASE',
+                        'bg-purple-100 text-purple-600 dark:bg-purple-900/40 dark:text-purple-300': act.type === 'SETTING & RELEASE'
+                      }">
+                      {{ act.type }}
+                    </span>
+                    <span class="px-2 py-0.5 rounded-full text-[11px] font-medium" :class="getStatusClass(act.status)">
+                      {{ act.status || '-' }}
+                    </span>
+                  </div>
+                  <p class="font-semibold text-sm text-gray-800 dark:text-white mt-1.5 break-words">{{ act.kodeAP }}</p>
+                  <p class="text-xs text-gray-500 dark:text-gray-300 leading-snug mt-0.5 line-clamp-2 break-words">
+                    {{ act.deskripsi }}
+                  </p>
+                  <p class="text-[11px] text-gray-400 mt-1.5">
+                    {{ act.pic }} &bull; {{ act.tanggal }}<template v-if="act.subDiv"> &bull; {{ act.subDiv }}</template>
+                  </p>
+                </div>
+
+                <!-- Angka: Total besar, rincian kecil -->
+                <div class="text-right shrink-0">
+                  <p class="text-lg font-bold text-gray-800 dark:text-white leading-none">{{ formatNumber(act.totalSetting) }}</p>
+                  <p class="text-[11px] text-gray-400 mt-1 whitespace-nowrap">{{ act.jmlSetting }} &times; {{ act.bobotSetting }}</p>
+                </div>
+              </div>
+            </li>
+          </ul>
+
+          <div class="flex items-center justify-between px-4 py-3 border-t-2 border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/30 rounded-b-xl">
+            <span class="text-xs font-medium text-gray-400">TOTAL</span>
+            <span class="text-xs text-gray-500 dark:text-gray-300">
+              Jml <b class="text-gray-800 dark:text-white">{{ data.totalPoin }}</b>
+              <span class="mx-1.5 text-gray-300">|</span>
+              Total <b class="text-gray-800 dark:text-white">{{ formatNumber(data.totalBobot) }}</b>
+            </span>
+          </div>
+        </template>
+
+        <!-- ===== DESKTOP / TABLET: tabel ===== -->
         <div v-else class="overflow-x-auto">
           <table class="w-full text-sm">
             <thead>
@@ -237,7 +286,7 @@
       </div>
 
       <!-- Last Updated -->
-      <p class="text-right text-xs text-gray-400 mt-3">
+      <p class="text-center sm:text-right text-xs text-gray-400 mt-3">
         🕐 Terakhir diperbarui: {{ lastUpdated }} · {{ autoRefresh ? "Auto-refresh setiap 3 menit" : "Auto-refresh dimatikan" }}
       </p>
 
@@ -250,6 +299,8 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useAuth } from '~/composables/useAuth'
 
 definePageMeta({ layout: 'dashboard' })
+
+const isMobile = useIsMobile()
 
 const formatNumber = (n: number) => {
   return n % 1 === 0 ? n.toString() : n.toFixed(1)

@@ -31,7 +31,7 @@ export default defineNuxtConfig({
         { rel: 'icon', type: 'image/png', href: '/favicon-32x32.png', sizes: '32x32' },
         { rel: 'apple-touch-icon', href: '/apple-touch-icon.png' },
         { rel: 'manifest', href: '/site.webmanifest' },
-        { rel: 'preload', href: '/fonts/exo2-800-watcher.woff2', as: 'font', type: 'font/woff2', crossorigin: '' },
+        { rel: 'preload', href: '/fonts/montserrat-800-watcher.woff2', as: 'font', type: 'font/woff2', crossorigin: '' },
       ],
     }
   },

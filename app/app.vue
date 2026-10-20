@@ -6,5 +6,10 @@
 
 <script setup lang="ts">
 const { init } = useDarkMode()
-onMounted(() => init())
+const { startSessionWatcher } = useAuth()
+
+onMounted(() => {
+  init()
+  startSessionWatcher()
+})
 </script>

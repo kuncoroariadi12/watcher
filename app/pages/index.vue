@@ -1,8 +1,11 @@
 <template>
-  <UnderMaintenance title="Settings" />
+  <div />
 </template>
 
 <script setup lang="ts">
-navigateTo('/login')
-definePageMeta({ layout: false })
+// Penjaga login (auth.global) sudah berjalan lebih dulu; halaman ini hanya meneruskan ke Emails.
+definePageMeta({
+  layout: false,
+  middleware: () => navigateTo('/emails', { replace: true }),
+})
 </script>

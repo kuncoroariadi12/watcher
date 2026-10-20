@@ -7,11 +7,24 @@ export default defineNuxtConfig({
     quiet: true,
   },
 
+  // Aplikasi internal dengan sesi login di browser: dirender di sisi browser (SPA)
+  // supaya penjaga login berjalan SEBELUM halaman mana pun tampil.
+  ssr: false,
+
   routeRules: {
-  '/api/n8n/**': {
-    proxy: 'https://n8n.devss.my.id/**'
-  }
-},
+    '/api/n8n/**': {
+      proxy: 'https://n8n.devss.my.id/**'
+    },
+    // Header keamanan untuk semua halaman; juga minta mesin pencari tidak mengindeks Watcher
+    '/**': {
+      headers: {
+        'X-Frame-Options': 'DENY',
+        'X-Content-Type-Options': 'nosniff',
+        'Referrer-Policy': 'strict-origin-when-cross-origin',
+        'X-Robots-Tag': 'noindex, nofollow',
+      }
+    }
+  },
 
   typescript: {
     typeCheck: false,
@@ -20,11 +33,12 @@ export default defineNuxtConfig({
 
   app: {
     head: {
-      title: 'Watcher - MDM Email Tracker',
+      title: 'Watcher',
       meta: [
         { charset: 'utf-8' },
         { name: 'viewport', content: 'width=device-width, initial-scale=1' },
         { name: 'theme-color', content: '#F03131' },
+        { name: 'robots', content: 'noindex, nofollow' },
       ],
       link: [
         { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico', sizes: '48x48' },

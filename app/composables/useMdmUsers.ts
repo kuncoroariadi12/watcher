@@ -18,11 +18,11 @@ export const useMdmUsers = () => {
     if (_loaded.value || _loading.value) return
     _loading.value = true
     try {
-      const { data, error } = await supabase
-        .from('users')
-        .select('pic_name, name, initial, color')
-        .eq('is_active', true)
-        .order('pic_name')
+      // Tabel users sudah tertutup untuk browser; daftar PIC diambil lewat fungsi server
+      // yang hanya menjawab kalau sesi login valid.
+      const { data, error } = await supabase.rpc('watcher_list_users', {
+        p_token: getSessionToken(),
+      })
 
       if (!error && data) {
         // buang duplikat & baris tanpa pic_name

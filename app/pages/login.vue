@@ -1,164 +1,181 @@
 <template>
-  <div class="min-h-screen bg-[#EEF0F5] flex items-center justify-center">
-    <div class="bg-white rounded-2xl shadow-sm p-8 w-full max-w-md mx-4">
+  <div class="relative min-h-screen min-h-[100dvh] flex items-center justify-center overflow-hidden px-4 py-10">
 
-      <!-- Header -->
+    <!-- Latar: foto kantor (letakkan di public/images/login-bg.jpg), diredupkan.
+         Kalau fotonya belum ada, otomatis tampil gradasi biru tua Watcher. -->
+    <div class="login-bg absolute inset-0" aria-hidden="true"></div>
+    <div class="absolute inset-0 bg-[#0A1642]/55 backdrop-blur-[10px]" aria-hidden="true"></div>
+    <div class="login-vignette absolute inset-0" aria-hidden="true"></div>
+
+    <main class="relative w-full max-w-md bg-white rounded-2xl shadow-2xl p-8 sm:p-9">
+
+      <!-- Brand -->
+      <div class="flex items-center gap-3.5 mb-7">
+        <img src="/images/logo-watcher.png" alt="Logo Watcher"
+             width="46" height="48" decoding="async" fetchpriority="high"
+             class="h-12 w-auto shrink-0" />
+        <div>
+          <p class="login-wordmark text-[26px] leading-none text-[#0A1642]">Watcher</p>
+          <div class="flex items-center gap-1.5 mt-2">
+            <span class="h-[3px] w-5 rounded-full bg-[#C6232B]"></span>
+            <p class="text-[10px] font-semibold uppercase tracking-[0.18em] text-gray-400 leading-none">MDM Portal</p>
+          </div>
+        </div>
+      </div>
+
       <div class="mb-6">
-        <h1 class="text-xl font-bold text-gray-900">
-          Selamat datang di Watcher
-        </h1>
+        <h1 class="text-xl font-bold text-gray-900">Selamat datang di Watcher</h1>
         <p class="text-sm text-gray-500 mt-1">
           Silahkan masuk dengan akun MG Anda untuk mengakses Watcher
         </p>
       </div>
 
-      <!-- Form -->
-      <div class="space-y-4">
+      <div v-if="expired" role="status"
+        class="mb-4 bg-amber-50 border border-amber-200 rounded-lg px-4 py-2.5 text-sm text-amber-800">
+        Sesi Anda sudah berakhir. Silakan masuk kembali.
+      </div>
 
-        <!-- Employee ID -->
+      <form class="space-y-4" @submit.prevent="handleLogin" novalidate>
+
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">
+          <label for="employeeId" class="block text-sm font-medium text-gray-700 mb-1">
             Employee ID <span class="text-red-500">*</span>
           </label>
           <input
+            id="employeeId"
             v-model="form.employeeId"
             type="text"
             placeholder="Contoh: MG139999"
-            @keyup.enter="handleLogin"
+            autocomplete="username"
+            autocapitalize="off"
+            spellcheck="false"
             :disabled="loading"
-            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm
-                   placeholder:text-gray-400 focus:outline-none focus:ring-2
-                   focus:ring-red-400 focus:border-transparent transition
-                   disabled:bg-gray-50 disabled:text-gray-400"
+            :class="inputClass"
           />
         </div>
 
-        <!-- Password -->
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">
+          <label for="password" class="block text-sm font-medium text-gray-700 mb-1">
             Password <span class="text-red-500">*</span>
           </label>
-          <div class="relative">
-            <input
-              v-model="form.password"
-              :type="showPassword ? 'text' : 'password'"
-              placeholder="Masukkan password Anda"
-              @keyup.enter="handleLogin"
-              :disabled="loading"
-              class="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm
-                     placeholder:text-gray-400 focus:outline-none focus:ring-2
-                     focus:ring-red-400 focus:border-transparent transition pr-10
-                     disabled:bg-gray-50 disabled:text-gray-400"
-            />
-            <button
-              type="button"
-              @click="showPassword = !showPassword"
-              class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400
-                     hover:text-gray-600 transition"
-            >
-              <svg v-if="!showPassword" xmlns="http://www.w3.org/2000/svg"
-                class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                  d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244
-                     19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45
-                     10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523
-                     10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65
-                     3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0
-                     0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" />
-              </svg>
-              <svg v-else xmlns="http://www.w3.org/2000/svg"
-                class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                  d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36
-                     4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431
-                     0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638
-                     0-8.573-3.007-9.963-7.178z" />
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
-            </button>
-          </div>
+          <UiPasswordInput
+            id="password"
+            v-model="form.password"
+            placeholder="Masukkan password Anda"
+            autocomplete="current-password"
+            :disabled="loading"
+            :input-class="inputClass"
+          />
         </div>
 
-        <!-- Ingat Saya -->
-        <div class="flex items-center gap-2">
-          <input
-            v-model="form.remember"
-            type="checkbox"
-            id="remember"
-            class="w-4 h-4 rounded border-gray-300 text-red-500
-                   focus:ring-red-400 cursor-pointer"
-          />
-          <label for="remember" class="text-sm text-gray-600 cursor-pointer">
-            Ingat saya
+        <div>
+          <label class="flex items-center gap-2 cursor-pointer w-fit">
+            <input v-model="form.remember" type="checkbox"
+              class="w-4 h-4 rounded border-gray-300 text-red-500 focus:ring-red-400 cursor-pointer" />
+            <span class="text-sm text-gray-600">Ingat saya</span>
           </label>
         </div>
 
-        <!-- Error Message -->
-        <div v-if="errorMsg"
-          class="bg-red-50 border border-red-200 rounded-lg px-4 py-2.5
-                 text-sm text-red-600 flex items-center gap-2">
-          <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <div v-if="errorMsg" role="alert"
+          class="bg-red-50 border border-red-200 rounded-lg px-4 py-2.5 text-sm text-red-600 flex items-start gap-2">
+          <svg class="w-4 h-4 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
               d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
           </svg>
-          {{ errorMsg }}
+          <span>{{ errorMsg }}</span>
         </div>
 
-        <!-- Tombol Masuk -->
         <button
-          @click="handleLogin"
+          type="submit"
           :disabled="loading"
-          class="w-full bg-[#F03131] hover:bg-red-600 active:bg-red-700
-                 text-white font-medium py-2.5 rounded-lg text-sm
-                 transition duration-150 mt-2 flex items-center justify-center gap-2
+          class="w-full bg-[#F03131] hover:bg-red-600 active:bg-red-700 text-white font-medium py-2.5
+                 rounded-lg text-sm transition duration-150 mt-2 flex items-center justify-center gap-2
+                 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-red-400
                  disabled:opacity-70 disabled:cursor-not-allowed"
         >
-          <svg v-if="loading" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+          <svg v-if="loading" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24" aria-hidden="true">
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
-            <path class="opacity-75" fill="currentColor"
-              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
           </svg>
           {{ loading ? 'Memverifikasi...' : 'Masuk' }}
         </button>
 
-      </div>
-    </div>
+      </form>
+    </main>
   </div>
 </template>
 
 <script setup lang="ts">
 definePageMeta({ layout: false })
 
+const route = useRoute()
+
 const form = reactive({
   employeeId : '',
   password   : '',
-  remember   : false,
+  remember   : true,
 })
 
-const showPassword = ref(false)
-const errorMsg     = ref('')
-const loading      = ref(false)
+const errorMsg = ref('')
+const loading  = ref(false)
+const expired  = computed(() => route.query.expired === '1')
+
+// text-base di HP mencegah iPhone zoom otomatis saat input difokuskan
+const inputClass =
+  'w-full px-4 py-2.5 border border-gray-300 rounded-lg text-base sm:text-sm text-gray-900 ' +
+  'placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-red-400 ' +
+  'focus:border-transparent transition disabled:bg-gray-50 disabled:text-gray-400'
 
 const handleLogin = async () => {
+  if (loading.value) return
   errorMsg.value = ''
 
-  if (!form.employeeId || !form.password) {
+  if (!form.employeeId.trim() || !form.password) {
     errorMsg.value = 'Employee ID dan password wajib diisi'
     return
   }
 
   loading.value = true
-
-  const result = await loginWithCredentials(form.employeeId.trim(), form.password)
-
+  const result = await loginWithCredentials(form.employeeId.trim(), form.password, form.remember)
   loading.value = false
 
   if (!result.ok) {
     errorMsg.value = result.error ?? 'Login gagal, coba lagi'
+    form.password = ''
     return
   }
 
-  navigateTo('/emails')
+  await navigateTo(safeRedirect(route.query.redirect) ?? '/emails', { replace: true })
 }
 </script>
+
+<style>
+@font-face {
+  font-family: 'Watcher Brand';
+  src: url('/fonts/montserrat-800-watcher.woff2') format('woff2');
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+.login-wordmark {
+  font-family: 'Watcher Brand', ui-sans-serif, system-ui, sans-serif;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+/* Foto kantor di lapisan paling bawah; gradasi jadi cadangan bila foto belum ada. */
+.login-bg {
+  background-image:
+    url('/images/login-bg.jpg'),
+    linear-gradient(135deg, #0A1642 0%, #13224f 55%, #2b1220 100%);
+  background-size: cover;
+  background-position: center;
+}
+
+/* Tepi layar sedikit lebih gelap supaya mata tertuju ke kartu login */
+.login-vignette {
+  background: radial-gradient(ellipse at center, rgba(5, 10, 30, 0) 40%, rgba(5, 10, 30, 0.45) 100%);
+}
+</style>

@@ -4,11 +4,16 @@
       :id="id"
       :value="modelValue"
       @input="emit('update:modelValue', ($event.target as HTMLInputElement).value)"
-      :type="visible ? 'text' : 'password'"
+      :type="noManager || visible ? 'text' : 'password'"
       :placeholder="placeholder"
-      :autocomplete="autocomplete"
+      :autocomplete="noManager ? 'off' : autocomplete"
+      :autocapitalize="noManager ? 'off' : undefined"
+      :spellcheck="noManager ? false : undefined"
+      :data-lpignore="noManager ? 'true' : undefined"
+      :data-1p-ignore="noManager ? 'true' : undefined"
+      :data-form-type="noManager ? 'other' : undefined"
       :disabled="disabled"
-      :class="[inputClass, 'pr-11']"
+      :class="[inputClass, 'pr-11', noManager && !visible ? 'pw-mask' : '']"
     />
     <button
       type="button"
@@ -39,14 +44,23 @@ withDefaults(defineProps<{
   autocomplete?: string
   disabled?: boolean
   inputClass?: string
+  /** true = tanpa saran/simpan password dari browser (Chrome, dll). Teks tetap disamarkan seperti password. */
+  noManager?: boolean
 }>(), {
   id: undefined,
   placeholder: '',
   autocomplete: 'current-password',
   disabled: false,
   inputClass: '',
+  noManager: false,
 })
 
 const emit = defineEmits<{ (e: 'update:modelValue', value: string): void }>()
 const visible = ref(false)
 </script>
+
+<style>
+/* Menyamarkan teks tanpa memakai type="password", supaya browser tidak menawarkan
+   password tersimpan / password kuat. Didukung Chrome, Edge, Safari, Firefox 114+. */
+.pw-mask { -webkit-text-security: disc; }
+</style>

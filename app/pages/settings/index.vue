@@ -36,6 +36,14 @@
             </dd>
           </div>
         </dl>
+
+        <div class="px-5 py-4 border-t border-gray-100 dark:border-gray-700 rounded-b-xl bg-gray-50 dark:bg-gray-700/30">
+          <p class="text-xs font-medium text-gray-400">Sesi login</p>
+          <p class="text-sm text-gray-700 dark:text-gray-200 mt-0.5">
+            <template v-if="sessionEndText">Berlaku sampai {{ sessionEndText }}</template>
+            <template v-else>-</template>
+          </p>
+        </div>
       </section>
 
       <!-- ===== GANTI PASSWORD ===== -->
@@ -47,7 +55,7 @@
           </p>
         </div>
 
-        <form class="px-5 pb-5 space-y-4" @submit.prevent="submit" novalidate>
+        <form class="px-5 pb-5 space-y-4" autocomplete="off" @submit.prevent="submit" novalidate>
           <div v-for="f in fields" :key="f.key">
             <label :for="`pw-${f.key}`" class="block text-xs font-medium text-gray-500 dark:text-gray-300 mb-1">
               {{ f.label }}
@@ -58,6 +66,7 @@
               :autocomplete="f.autocomplete"
               :disabled="saving"
               :input-class="inputClass"
+              no-manager
             />
             <p v-if="f.hint" class="text-xs text-gray-400 mt-1">{{ f.hint }}</p>
           </div>
